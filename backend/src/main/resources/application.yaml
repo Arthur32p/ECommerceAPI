@@ -17,8 +17,7 @@
       enabled: true
       locations: classpath:db/migration
 
-  jwt:
-    private:
-      key: classpath:app.key
-    public:
-      key: classpath:app.pub
+  api:
+    security:
+      token:
+        secret: ${JWT_SECRET:my-secret-key}

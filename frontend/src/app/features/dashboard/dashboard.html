@@ -1,0 +1,19 @@
+<div class="container mt-5">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h2 class="card-title text-success">🎉 Dashboard de Testes</h2>
+      <p class="card-text">Se você está vendo esta tela, a navegação pós-login funcionou!</p>
+      
+      <hr />
+
+      <h5>Token JWT armazenado no localStorage:</h5>
+      <div class="p-3 bg-light border rounded text-break font-monospace small">
+        {{ tokenSalvo() || 'Nenhum token encontrado!' }}
+      </div>
+
+      <button class="btn btn-danger mt-4" (click)="logout()">
+        Sair (Logout)
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,15 +1,18 @@
 package io.github.arthur32p.ECommerceAPI.controller;
 
 import io.github.arthur32p.ECommerceAPI.controller.common.GenericController;
+import io.github.arthur32p.ECommerceAPI.dto.LoginRequestDto;
 import io.github.arthur32p.ECommerceAPI.dto.RegisterRequestDto;
 import io.github.arthur32p.ECommerceAPI.dto.TokenResponseDto;
 import io.github.arthur32p.ECommerceAPI.dto.UserResponseDto;
 import io.github.arthur32p.ECommerceAPI.model.User;
-import io.github.arthur32p.ECommerceAPI.service.AuthenticationService;
+import io.github.arthur32p.ECommerceAPI.model.UserAuthenticated;
+import io.github.arthur32p.ECommerceAPI.service.TokenService;
 import io.github.arthur32p.ECommerceAPI.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,7 +25,8 @@ import java.net.URI;
 @RequiredArgsConstructor
 public class AuthenticationController implements GenericController {
 
-    private final AuthenticationService authenticationService;
+    private final AuthenticationManager authenticationManager;
+    private final TokenService tokenService;
     private final UserService userService;
 
     @PostMapping("/register")
@@ -34,8 +38,11 @@ public class AuthenticationController implements GenericController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<TokenResponseDto> authenticate(Authentication authentication){
-        String token = authenticationService.authenticate(authentication);
-        return ResponseEntity.ok(new TokenResponseDto(token, 3600L));
+    public ResponseEntity<TokenResponseDto> authenticate(@RequestBody LoginRequestDto dto){
+        var usernamePassword = new UsernamePasswordAuthenticationToken(dto.email(), dto.password());
+        var auth = authenticationManager.authenticate(usernamePassword);
+        var token = tokenService.generateToken((UserAuthenticated) auth.getPrincipal());
+
+        return ResponseEntity.ok(new TokenResponseDto(token));
     }
 }

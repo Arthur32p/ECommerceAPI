@@ -21,9 +21,9 @@ public class UserService {
 
     @Transactional
     public UserResponseDto register(RegisterRequestDto dto){
-        userRepository.findByEmail(dto.email()).ifPresent(u -> {
-            throw  new IllegalArgumentException("Usuário já está criado");
-        });
+        if (userRepository.existsByEmail(dto.email())) {
+            throw new IllegalArgumentException("Usuário já está criado");
+        }
 
         User user = userMapper.toEntity(dto);
         user.setPassword(passwordEncoder.encode(dto.password()));
