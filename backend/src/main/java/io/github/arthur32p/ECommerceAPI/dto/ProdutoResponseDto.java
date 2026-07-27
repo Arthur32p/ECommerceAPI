@@ -9,6 +9,7 @@ public record ProdutoResponseDto(
         String descricao,
         BigDecimal preco,
         Integer quantidadeEstoque,
+        String imagemUrl,
         Boolean ativo
 ) {
 }

@@ -31,6 +31,9 @@ public class Produto {
     @Column(name = "quantidade_estoque", nullable = false)
     private Integer quantidadeEstoque;
 
+    @Column(name = "imagem_url", length = 500)
+    private String imagemUrl;
+
     @Column
     private Boolean ativo = false;
 }

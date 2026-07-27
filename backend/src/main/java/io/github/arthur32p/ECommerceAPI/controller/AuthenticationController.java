@@ -9,6 +9,7 @@ import io.github.arthur32p.ECommerceAPI.model.User;
 import io.github.arthur32p.ECommerceAPI.model.UserAuthenticated;
 import io.github.arthur32p.ECommerceAPI.service.TokenService;
 import io.github.arthur32p.ECommerceAPI.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -30,7 +31,7 @@ public class AuthenticationController implements GenericController {
     private final UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<UserResponseDto> register(@RequestBody RegisterRequestDto dto){
+    public ResponseEntity<UserResponseDto> register(@RequestBody @Valid RegisterRequestDto dto){
         UserResponseDto savedUser = userService.register(dto);
         URI location = gerarHeaderLocation(savedUser.id());
 
@@ -38,7 +39,7 @@ public class AuthenticationController implements GenericController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<TokenResponseDto> authenticate(@RequestBody LoginRequestDto dto){
+    public ResponseEntity<TokenResponseDto> authenticate(@RequestBody @Valid LoginRequestDto dto){
         var usernamePassword = new UsernamePasswordAuthenticationToken(dto.email(), dto.password());
         var auth = authenticationManager.authenticate(usernamePassword);
         var token = tokenService.generateToken((UserAuthenticated) auth.getPrincipal());

@@ -4,5 +4,6 @@ CREATE TABLE produto (
     descricao VARCHAR(255) NOT NULL,
     preco DECIMAL(6, 2) NOT NULL,
     quantidade_estoque INTEGER NOT NULL,
-    ativo BOOLEAN DEFAULT TRUE
+    imagem_url VARCHAR(500),
+    ativo BOOLEAN NOT NULL
 );

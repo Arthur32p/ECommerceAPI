@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
@@ -21,6 +22,7 @@ public class ProdutoService {
 
     private final ProdutoRepository produtoRepository;
     private final ProdutoMapper produtoMapper;
+    private final StorageService storageService;
 
     public ProdutoResponseDto create(ProdutoRequestDto dto){
         Produto produto = produtoMapper.toEntity(dto);
@@ -70,6 +72,18 @@ public class ProdutoService {
                 .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado com o ID: " + id));
 
         produto.setAtivo(!produto.getAtivo());
+    }
+
+    public ProdutoResponseDto uploadImagem(UUID id, MultipartFile file) {
+        Produto produto = produtoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
+
+        String imagemUrl = storageService.uploadFile(file);
+
+        produto.setImagemUrl(imagemUrl);
+        Produto produtoSalvo = produtoRepository.save(produto);
+
+        return produtoMapper.toResponse(produtoSalvo);
     }
 
 }
