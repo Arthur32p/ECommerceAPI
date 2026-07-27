@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-07-26T17:54:48-0300",
+    date = "2026-07-27T15:31:38-0300",
     comments = "version: 1.5.5.Final, compiler: javac, environment: Java 21.0.12 (Arch Linux)"
 )
 @Component
@@ -64,6 +64,7 @@ public class ProdutoMapperImpl implements ProdutoMapper {
         String descricao = null;
         BigDecimal preco = null;
         Integer quantidadeEstoque = null;
+        String imagemUrl = null;
         Boolean ativo = null;
 
         id = produto.getId();
@@ -71,9 +72,10 @@ public class ProdutoMapperImpl implements ProdutoMapper {
         descricao = produto.getDescricao();
         preco = produto.getPreco();
         quantidadeEstoque = produto.getQuantidadeEstoque();
+        imagemUrl = produto.getImagemUrl();
         ativo = produto.getAtivo();
 
-        ProdutoResponseDto produtoResponseDto = new ProdutoResponseDto( id, nome, descricao, preco, quantidadeEstoque, ativo );
+        ProdutoResponseDto produtoResponseDto = new ProdutoResponseDto( id, nome, descricao, preco, quantidadeEstoque, imagemUrl, ativo );
 
         return produtoResponseDto;
     }
