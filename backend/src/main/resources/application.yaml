@@ -29,3 +29,9 @@
       access-key: admin
       secret-key: password123
       bucket-name: produtos
+
+  stripe:
+    api-key: ${STRIPE_SECRET_KEY}
+    webhook-secret: ${STRIPE_WEBHOOK_SECRET}
+    success-url: "http://localhost:8080/swagger-ui/index.html?status=sucesso"
+    cancel-url: "http://localhost:8080/swagger-ui/index.html?status=cancelado"
