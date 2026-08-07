@@ -46,6 +46,21 @@ services:
     networks:
       - ecommerce_network
 
+  createbuckets:
+    image: minio/mc
+    container_name: ecommerce_minio_init
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc alias set myminio http://minio:9000 admin password123;
+      /usr/bin/mc mb myminio/produtos;
+      /usr/bin/mc anonymous set download myminio/produtos;
+      exit 0;
+      "
+    networks:
+      - ecommerce_network
+
 networks:
   ecommerce_network:
     driver: bridge

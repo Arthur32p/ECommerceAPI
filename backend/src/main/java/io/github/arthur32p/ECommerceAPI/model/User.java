@@ -31,4 +31,7 @@ public class User {
     @Column(nullable = false)
     private Role role;
 
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Carrinho carrinho;
+
 }
