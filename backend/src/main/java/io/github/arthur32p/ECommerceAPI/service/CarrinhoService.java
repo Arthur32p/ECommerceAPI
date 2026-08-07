@@ -1,5 +1,6 @@
 package io.github.arthur32p.ECommerceAPI.service;
 
+import io.github.arthur32p.ECommerceAPI.dto.AtualizarQuantidadeItemDto;
 import io.github.arthur32p.ECommerceAPI.dto.CarrinhoResponseDto;
 import io.github.arthur32p.ECommerceAPI.dto.ItemCarrinhoRequestDto;
 import io.github.arthur32p.ECommerceAPI.mapper.CarrinhoMapper;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -26,14 +28,11 @@ public class CarrinhoService {
 
     @Transactional
     public CarrinhoResponseDto adicionarItem(UserAuthenticated userAuthenticated, ItemCarrinhoRequestDto dto) {
-
-        User user = userRepository.findById(userAuthenticated.getId())
-                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
-
-        Carrinho carrinho = carrinhoRepository.findByUserId(user.getId())
+        Carrinho carrinho = carrinhoRepository.findByUserId(userAuthenticated.getId())
                 .orElseGet(() -> {
+                    User userReference = userRepository.getReferenceById(userAuthenticated.getId());
                     Carrinho novoCarrinho = new Carrinho();
-                    novoCarrinho.setUser(user);
+                    novoCarrinho.setUser(userReference);
                     return carrinhoRepository.save(novoCarrinho);
                 });
 
@@ -69,6 +68,52 @@ public class CarrinhoService {
         Carrinho carrinhoSalvo = carrinhoRepository.save(carrinho);
 
         return carrinhoMapper.toDto(carrinhoSalvo);
+    }
+
+    @Transactional(readOnly = true)
+    public CarrinhoResponseDto buscarCarrinho(UserAuthenticated userAuthenticated) {
+        Carrinho carrinho = carrinhoRepository.findByUserId(userAuthenticated.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Carrinho não encontrado"));
+
+        return carrinhoMapper.toDto(carrinho);
+    }
+
+    @Transactional
+    public CarrinhoResponseDto atualizarCarrinho(UserAuthenticated userAuthenticated, UUID itemId, AtualizarQuantidadeItemDto dto) {
+        Carrinho carrinho = carrinhoRepository.findByUserId(userAuthenticated.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Carrinho não encontrado"));
+
+        ItemCarrinho item = carrinho.getItens().stream()
+                .filter(i -> i.getId().equals(itemId))
+                .findFirst()
+                .orElseThrow(() -> new EntityNotFoundException("Item não encontrado no carrinho"));
+
+        if (item.getProduto().getQuantidadeEstoque() < dto.quantidade()) {
+            throw new IllegalArgumentException("Estoque insuficiente para o produto: " + item.getProduto().getNome());
+        }
+
+        item.setQuantidade(dto.quantidade());
+
+        recalcularValorTotal(carrinho);
+        Carrinho carrinhoSalvo = carrinhoRepository.save(carrinho);
+
+        return carrinhoMapper.toDto(carrinhoSalvo);
+    }
+
+    @Transactional
+    public void deletarItem(UserAuthenticated userAuthenticated, UUID itemId) {
+        Carrinho carrinho = carrinhoRepository.findByUserId(userAuthenticated.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Carrinho não encontrado"));
+
+        ItemCarrinho item = carrinho.getItens().stream()
+                .filter(i -> i.getId().equals(itemId))
+                .findFirst()
+                .orElseThrow(() -> new EntityNotFoundException("Item não encontrado no carrinho"));
+
+        carrinho.getItens().remove(item);
+
+        recalcularValorTotal(carrinho);
+        carrinhoRepository.save(carrinho);
     }
 
     private void recalcularValorTotal(Carrinho carrinho) {
