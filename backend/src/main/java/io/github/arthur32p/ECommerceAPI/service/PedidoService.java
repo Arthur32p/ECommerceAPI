@@ -3,6 +3,8 @@ package io.github.arthur32p.ECommerceAPI.service;
 import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
 import io.github.arthur32p.ECommerceAPI.dto.CheckoutResponse;
+import io.github.arthur32p.ECommerceAPI.exceptions.CarrinhoVazioException;
+import io.github.arthur32p.ECommerceAPI.exceptions.EstoqueInsuficienteException;
 import io.github.arthur32p.ECommerceAPI.model.*;
 import io.github.arthur32p.ECommerceAPI.repository.CarrinhoRepository;
 import io.github.arthur32p.ECommerceAPI.repository.PedidoRepository;
@@ -37,7 +39,7 @@ public class PedidoService {
                 .orElseThrow(() -> new EntityNotFoundException("Carrinho não encontrado"));
 
         if (carrinho.getItens().isEmpty()) {
-            throw new RuntimeException("Não é possível realizar o checkout com o carrinho vazio.");
+            throw new CarrinhoVazioException("Não é possível realizar o checkout com o carrinho vazio.");
         }
 
         BigDecimal valorTotal = BigDecimal.ZERO;
@@ -52,10 +54,16 @@ public class PedidoService {
             Produto produto = item.getProduto();
 
             if (produto.getQuantidadeEstoque() < item.getQuantidade()) {
-                throw new RuntimeException("Estoque insuficiente para o produto: " + produto.getNome());
+                throw new EstoqueInsuficienteException("Estoque insuficiente para o produto: " + produto.getNome());
             }
 
-            produto.setQuantidadeEstoque(produto.getQuantidadeEstoque() - item.getQuantidade());
+            int novoEstoque = produto.getQuantidadeEstoque() - item.getQuantidade();
+            produto.setQuantidadeEstoque(novoEstoque);
+
+            if(novoEstoque == 0){
+                produto.setAtivo(false);
+            }
+
             produtoRepository.save(produto);
 
             ItemPedido itemPedido = new ItemPedido();
@@ -81,19 +89,9 @@ public class PedidoService {
         pedidoRepository.save(pedido);
 
         carrinho.getItens().clear();
+        carrinho.setValorTotal(BigDecimal.ZERO);
         carrinhoRepository.save(carrinho);
 
         return new CheckoutResponse(pedido.getId(), session.getUrl());
-    }
-
-    @Transactional
-    public void confirmarPagamentoStrip(String stripeSessionId){
-        Pedido pedido = pedidoRepository.findByStripePaymentIntentId(stripeSessionId)
-                .orElseThrow(() -> new EntityNotFoundException("Pedido não econtrado para a sessão do stripe " + stripeSessionId));
-
-        if(pedido.getStatus() == StatusPedido.PENDENTE){
-            pedido.setStatus(StatusPedido.PAGO);
-            pedidoRepository.save(pedido);
-        }
     }
 }

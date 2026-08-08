@@ -3,6 +3,7 @@ package io.github.arthur32p.ECommerceAPI.service;
 import io.github.arthur32p.ECommerceAPI.dto.AtualizarQuantidadeItemDto;
 import io.github.arthur32p.ECommerceAPI.dto.CarrinhoResponseDto;
 import io.github.arthur32p.ECommerceAPI.dto.ItemCarrinhoRequestDto;
+import io.github.arthur32p.ECommerceAPI.exceptions.EstoqueInsuficienteException;
 import io.github.arthur32p.ECommerceAPI.mapper.CarrinhoMapper;
 import io.github.arthur32p.ECommerceAPI.model.*;
 import io.github.arthur32p.ECommerceAPI.repository.CarrinhoRepository;
@@ -49,7 +50,7 @@ public class CarrinhoService {
         }
 
         if (produto.getQuantidadeEstoque() < quantidadeTotal) {
-            throw new IllegalArgumentException("Estoque insuficiente para o produto: " + produto.getNome());
+            throw new EstoqueInsuficienteException("Estoque insuficiente para o produto: " + produto.getNome());
         }
 
         if (itemExistente.isPresent()) {
@@ -89,7 +90,7 @@ public class CarrinhoService {
                 .orElseThrow(() -> new EntityNotFoundException("Item não encontrado no carrinho"));
 
         if (item.getProduto().getQuantidadeEstoque() < dto.quantidade()) {
-            throw new IllegalArgumentException("Estoque insuficiente para o produto: " + item.getProduto().getNome());
+            throw new EstoqueInsuficienteException("Estoque insuficiente para o produto: " + item.getProduto().getNome());
         }
 
         item.setQuantidade(dto.quantidade());
